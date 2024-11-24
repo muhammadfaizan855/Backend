@@ -17,7 +17,7 @@ const users = []
 
 
 app.get('/', (req, res) => {
-  res.send('Hello Faizan!');
+  res.send('Hello world!');
 })
 
 
@@ -76,6 +76,31 @@ app.get("/user/:id", (req , res)=>{
     data: users[index]
    })
 
+})
+
+
+// user delete
+
+app.delete("/user/:id" , (req , res) => {
+  const { id } = req.params;
+
+  const index = users.findIndex((item)=>{
+     return item.id === +id
+  })
+
+  if(index === -1){
+    res.status(400).json({
+      message: "No user found"
+    })
+    return
+  }
+
+  users.splice(index , 1);
+  res.status(200).json({
+    message: "user deleted successfully",
+    data: users,
+
+  })
 })
 
 
