@@ -91,4 +91,60 @@ const loginUser = async (req , res) => {
 }
 
 
-export { userRegister , loginUser }
+// logout User
+
+const logoutUser = (req , res) => {
+    res.clearCookie("refreshToken");
+    res.status(200).json({message: "User logout successfully"})
+}
+
+
+
+// Refresh Token
+
+
+const refreshToken = async (req , res) => {
+    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    
+    if(!refreshToken){
+        return res.status(401).json({
+            message : "No Refresh Token Found!"
+        })
+    }
+
+
+    const decodedToken = jwt.verify(refreshToken , process.env.REFRESH_JWT_SECRET)
+    
+    const user = await User.find({email : decodedToken.email})
+
+    if(!user){
+        return res.status(404).json({
+            message : "Invalid Token"
+        })
+    }
+
+    const generateToken = generateAccessToken(user)
+    return res.status(200).json({ message : "access token generate" , accessToken: generateToken })
+
+    res.json({ decodedToken ,  })
+}
+
+
+
+
+// authenticate user middlewire
+
+const authenticateUser = async (req, res, next) => {
+  const token = req.headers["authorization"];
+  if (!token) return res.status(404).json({ message: "no token found" });
+
+  jwt.verify(token, process.env.ACCESS_JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "invalid token" });
+    req.user = user;
+    next();
+  });
+};
+
+
+
+export { userRegister , loginUser , logoutUser , refreshToken , authenticateUser }
